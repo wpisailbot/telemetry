@@ -1,4 +1,18 @@
-const socket = io(); // socket initialization
+console.log('this simulator script is running in Node.js');
+import { runAstar } from './astar.js';
+import http from 'http';
+import express from 'express';
+
+import { Server } from "socket.io";
+import bodyParser from 'body-parser';
+
+const app = express();
+const server = http.createServer(app);
+
+const socket = new Server(server);
+
+//const socket = io('/'); // socket initialization
+// console.log('Begin simulator....');
 
 let counter = 0;
 let dataInterval;

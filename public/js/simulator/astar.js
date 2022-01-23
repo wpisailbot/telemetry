@@ -24,9 +24,9 @@ let lowestPathWeight = 999999999;
 * 		the top of the list
 * 
 */
-const runAstar = (start, dest) => {
+export const runAstar = (start, dest) => {
 	destination = dest; // pops the first element
-	console.log(gridCenters); // holds all the points, and their coords
+	//console.log(gridCenters); // holds all the points, and their coords  -  commented out by  JT - what is gridCenters?????
 	resetPaths(start);
 	let counter = 0
 	// console.log(start, pathsToCheck);
@@ -140,5 +140,4 @@ const findNeightbors = (x, y) => {
 
 	return neighbors;
 }
-
 
