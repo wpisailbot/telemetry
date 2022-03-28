@@ -29,7 +29,7 @@ h6 {
 .magnitude {
 	position: relative;
 	display: inline;
-	top: -10px;
+	top: 110px;
 	left: -17px;
 }
 
@@ -84,15 +84,17 @@ h6 {
 #map-container{
 	z-index: 0;
 	position: fixed;
-	left: 5vw;
-	top: 2vh;
+	left: 20vw;
+	bottom: 2vh;
 }
 
 #mapCanvas{
-	height: 90vh;
-	width: 90vw;
+	height: 69vh;
+	width: 55vw;
 	position: relative;
 	overflow: hidden;
+	/*top: 25vh;
+	left: 30vh;*/
 }
 
 /*#apparentWind{

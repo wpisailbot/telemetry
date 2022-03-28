@@ -1,4 +1,9 @@
-const socket = io(); // socket initialization
+const socket = io("http://localhost:3000/", { transports: ['polling', 'flashsocket'] }); // socket initialization
+console.log("we think weve connected to port 3000")
+socket.emit('client');
+socket.on('updateDashboard', (data) => {
+	console.log("we do not care");
+});
 
 let counter = 0;
 let dataInterval;
@@ -31,6 +36,31 @@ while (waypoints.length > 0){
     console.log(boatWaypoints);
 }
 
+function recalculateSimWaypoints()
+{
+	console.log("re-simulating......");
+	boatWaypoints = [];
+	let waypoints2 = [
+		{ x: 3, y: 6, lat: 42.84780, lng: -70.9849 }, 
+		{ x: 7, y: 6, lat: 42.84780, lng: -70.9809 }, 
+		{ x: 5, y: 4, lat: 42.8499, lng: -70.9829 },
+		{ x: 0, y: 4, lat: 42.84964938719152, lng: -70.98783200038395 },
+	];
+	while (waypoints2.length > 0){
+		let tempDest = waypoints2.shift();
+		console.log(boatStart[0], tempDest);
+		let path = runAstar(boatStart, tempDest).reverse()
+		waypoints2.length > 1 ? path.pop() : undefined;
+		boatWaypoints.push(...path);
+		boatStart = [{ weight: 0, ...tempDest }]; // has to be in an array so it looks like a path
+		console.log(boatWaypoints);
+	}
+}
+
+function randomizer(multiplier) {
+	return (Math.random() * multiplier);
+  }
+
 // getting intermediate points
 // let mockCoords = [];
 // for (let i = 0; i < boatWaypoints.length - 1; i++){
@@ -44,25 +74,44 @@ while (waypoints.length > 0){
 // }
 // console.log(mockCoords);
 
+function dataMaker(){
+	var rand_ground_speed = randomizer(25);
+	
+	var data_JSON = {
+		apparentWind: {speed: 10 + Math.floor(randomizer(50)), direction: Math.floor(randomizer(295))},
+		theoreticalWind: {speed: 10 + Math.floor(randomizer(50)), direction: Math.floor(randomizer(295))},
+		compass: {x: Math.floor(randomizer(360)), y: Math.floor(randomizer(360)), z: 'garbo'}, 
+		airtemp: Math.floor(Math.random() * 35),
+		windchill: Math.floor(Math.random() * 35),
+		pressure: 950 + Math.floor(Math.random() * 100),
+		groundspeed: rand_ground_speed,
+		gps: {latitude: boatWaypoints[counter].lat, longitude: boatWaypoints[counter].lng}, 
+		pitchroll: {pitch: 15+Math.floor(randomizer(20)) - 20, roll: Math.floor(Math.random() * 180) - 90},
+		gyro: {phi: Math.floor(randomizer(100000)/1000), theta: Math.floor(randomizer(100000)/1000), psi: Math.floor(randomizer(100000))/1000}
+	};
+
+	return data_JSON;
+}
 
 // sends data every 500ms
-const sendMockMessages = () => {
+var sendMockMessages = () => {
 	// timeout variable holds the timeout
-	dataInterval = setInterval(() => {socket.emit('data', {
-			apparentWind: {speed: 10 + Math.floor(Math.random() * 50), direction: Math.floor(Math.random() * 295)},
-			theoreticalWind: {speed: 10 + Math.floor(Math.random() * 50), direction: Math.floor(Math.random() * 295)},
-			compass: {x: Math.floor(Math.random() * 360), y: Math.floor(Math.random() * 360), z: 'garbo'}, 
-			airtemp: Math.floor(Math.random() * 35),
-			windchill: Math.floor(Math.random() * 35),
-			pressure: 950 + Math.floor(Math.random() * 100),
-			groundspeed: Math.floor(Math.random() * 25),
-			gps: {latitude: boatWaypoints[counter].lat, longitude: boatWaypoints[counter].lng}, 
-			pitchroll: {pitch: Math.floor(Math.random() * 20) - 20, roll: Math.floor(Math.random() * 180) - 90},
-			gyro: {phi: Math.floor(Math.random() * 100000)/1000, theta: Math.floor(Math.random() * 100000)/1000, psi: Math.floor(Math.random() * 100000)/1000}
-		});
-			
+	
+
+	dataInterval = setInterval(() => {
+		data_JSON = dataMaker();
+		socket.emit('data', data_JSON);
 		counter++;
-		console.log(boatWaypoints[counter].lat +' '+ boatWaypoints[counter].lng);
+		if (typeof boatWaypoints[counter] === 'undefined') {		//re-simulate when data runs out!
+			recalculateSimWaypoints();
+			counter = 0; 
+		}
+		//console.log(boatWaypoints[counter].lat +' '+ boatWaypoints[counter].lng);
+		console.log('counter: ' + counter + "/" + boatWaypoints.length);
+		var today = new Date();
+		var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+		console.log(time)
+		console.log('lat: ' + boatWaypoints[counter].lat + "   long: " + boatWaypoints[counter].lng);
 	}, 1000);
 
 	document.querySelector('#message').innerHTML = 'Sending...';

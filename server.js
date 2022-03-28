@@ -1,12 +1,22 @@
 const fs = require('fs');
 const http = require('http');
 const express = require('express');
-const socketIO = require('socket.io');
-const bodyParser = require('body-parser');
+
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server);
+
+const io = require("socket.io")(server, {
+	cors: {
+	  origin: "*",
+	  methods: ["GET", "POST"],
+	  allowedHeaders: ['Content-Type', 'Authorization'],
+	  credentials: true
+	}
+  });
+const bodyParser = require('body-parser');
+
+//const io = socketIO(server);
 const port = process.env.PORT || 3000;
 
 // Headers needed so data is in the correct order to be appended to the csv file (from a json) (also its faster this way trust me)
@@ -56,11 +66,18 @@ app.post('/boat', (req, res) => {
 // Inits Socket Connection from each client
 io.on('connection', (socket) => {
 	// If designated as a client, socket is sent to a room where the data will be emitted once recieved
-	socket.on('client', () => socket.join('clients'));
+	socket.on('client', () => {
+		socket.join('clients');
+		console.log("New Client.");
+	});
 
 	// once data is recieved emits to all clients in clients room
 	socket.on('data', (data) => {
-		io.to('clients').emit('updateDash', data);
+		var today = new Date();
+		var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+		console.log(time)
+		console.log(data);
+		io.to('clients').emit('updateDashboard', data);
 		addToDB(data);
 	});
 });
@@ -69,6 +86,11 @@ io.on('connection', (socket) => {
 // Function that will add to a database for each different data type
 //		data - data to be saved in json format, file - file to save data, headers - headers of file so csv can be correctly ordered
 const addToDB = async (data, file, headers) => {
+	if (headers==null)
+	{
+		//do nothing
+		return 0;
+	}
 	let out = Object.keys(headers).map((val) => 0); // save an array with length of headers and default value to 0
 	Object.entries(data).forEach((entry, ind) => out[headers[entry[0]]] = entry[1]); // set each value at corresponding header location
 	fs.appendFile(file, ['\n' + getDateTime(), ...Object.values(out)], (err) => // appends to csv with organized data w date time
