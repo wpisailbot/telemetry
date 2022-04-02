@@ -1,4 +1,5 @@
-const socket = io("http://localhost:3000/", { transports: ['polling', 'flashsocket'] }); // socket initialization
+//const socket = io("http://localhost:3000/", { transports: ['polling', 'flashsocket'] }); // socket initialization
+const socket = io("http://192.168.17.20:3000/", { transports: ['polling', 'flashsocket'] }); // socket initialization
 console.log("we think weve connected to port 3000")
 socket.emit('client');
 socket.on('updateDashboard', (data) => {
@@ -74,16 +75,21 @@ function randomizer(multiplier) {
 // }
 // console.log(mockCoords);
 
-function dataMaker(){
+function dataMaker(){				//the 'simulator'
 	var rand_ground_speed = randomizer(25);
 	
 	var data_JSON = {
 		apparentWind: {speed: 10 + Math.floor(randomizer(50)), direction: Math.floor(randomizer(295))},
-		theoreticalWind: {speed: 10 + Math.floor(randomizer(50)), direction: Math.floor(randomizer(295))},
+		trueWind: {speed: 10 + Math.floor(randomizer(50)), direction: Math.floor(randomizer(295))},
+		intendedHeading: 60 + Math.floor(randomizer(180)),
+		currentHeading: 20 + Math.floor(randomizer(179)),
+		magneticSensorHeading: Math.floor(randomizer(360)),
+		hullVoltage: Math.floor(randomizer(15)),
+		trimtabVoltage:Math.floor(randomizer(5)),
 		compass: {x: Math.floor(randomizer(360)), y: Math.floor(randomizer(360)), z: 'garbo'}, 
-		airtemp: Math.floor(Math.random() * 35),
-		windchill: Math.floor(Math.random() * 35),
-		pressure: 950 + Math.floor(Math.random() * 100),
+		//airtemp: Math.floor(Math.random() * 35),
+		//windchill: Math.floor(Math.random() * 35),
+		//pressure: 950 + Math.floor(Math.random() * 100),
 		groundspeed: rand_ground_speed,
 		gps: {latitude: boatWaypoints[counter].lat, longitude: boatWaypoints[counter].lng}, 
 		pitchroll: {pitch: 15+Math.floor(randomizer(20)) - 20, roll: Math.floor(Math.random() * 180) - 90},

@@ -13,7 +13,7 @@ const socketInit = () => {
 
     // Creates callback for when data is recieved from the server (updates all the page components)
 	socket.on('updateDashboard', (data) => {
-		console.log("plumbus moment.... ");
+		console.log("SAILGOAT Dashboard is Connected.");
 		console.log(data);
     /********** Apparent Wind **********/
         let appSpeed = (data.apparentWind.speed ? data.apparentWind.speed : 60);
@@ -57,8 +57,8 @@ const socketInit = () => {
 
 	// /********** Theoretical Wind **********/
 
-        let theoSpeed = (data.theoreticalWind.speed ? data.theoreticalWind.speed : 60);
-        let theoDirection = (data.theoreticalWind.direction ? data.theoreticalWind.direction : 0);
+        let theoSpeed = (data.trueWind.speed ? data.trueWind.speed : 60);
+        let theoDirection = (data.trueWind.direction ? data.trueWind.direction : 0);
         let theoOldAngle = document.querySelector('#theoreticalWindVectorLine').transform.baseVal[0].angle;
         let theoX = theoSpeed * Math.cos(0 * (Math.PI / 180));
         let theoY = theoSpeed * Math.sin(0 * (Math.PI / 180));
@@ -79,16 +79,68 @@ const socketInit = () => {
 
         document.querySelector('#theoreticalWindAngle').innerHTML = theoDirection;
         document.querySelector('#theoreticalWindMag').innerHTML = theoSpeed;
+    
+    // /********** INTENDEAD HEADING  -- 2022 NEW - TBD**********/
 
+    //let theoSpeed = (data.theoreticalWind.speed ? data.theoreticalWind.speed : 60);
+    magnitude = 24;
+    let intendedHeading = (data.intendedHeading ? data.intendedHeading : 0);
+    let IHoldAngle = document.querySelector('#intendedHeadingVectorLine').transform.baseVal[0].angle;
+    let intendedHeading_x = magnitude * Math.cos(0 * (Math.PI / 180));
+    let intendedHeading_y = magnitude * Math.sin(0 * (Math.PI / 180));
+    
+    // sets the correct Length of the Vector at the 0 angle
+    d3.select('#intendedHeadingVectorLine')
+        .attr('x1', (30 - intendedHeading_x/2).toString())
+        .attr('y1', (30 - intendedHeading_y/2).toString())
+        .attr('x2', (30 + intendedHeading_x/2).toString())
+        .attr('y2', (30 + intendedHeading_y/2).toString());
+
+    // Sets the trnsition from the vector's oldAngle to the new angle
+    d3.select('#intendedHeadingVectorLine')
+        .transition()
+        .duration(1000)
+        .ease(d3.easeElasticOut, 1, 0.9)
+        .attrTween("transform", () => d3.interpolateString('rotate('+ IHoldAngle +', 30, 30)', 'rotate('+ -intendedHeading +', 30, 30)'));
+
+    document.querySelector('#intendedHeadingAngle').innerHTML = intendedHeading;
+    //  ignore document.querySelector('#theoreticalWindMag').innerHTML = theoSpeed;
+
+    // /********** MAG. HEADING  -- 2022 NEW - TBD**********/
+
+    //let theoSpeed = (data.theoreticalWind.speed ? data.theoreticalWind.speed : 60);
+    //magnitude = 24;
+    let magneticHeading = (data.currentHeading ? data.currentHeading : 0);
+    let MHoldAngle = document.querySelector('#currentHeadingVectorLine').transform.baseVal[0].angle;
+    let magneticHeading_x = magnitude * Math.cos(0 * (Math.PI / 180));
+    let magneticHeading_y = magnitude * Math.sin(0 * (Math.PI / 180));
+    
+    // sets the correct Length of the Vector at the 0 angle
+    d3.select('#currentHeadingVectorLine')
+        .attr('x1', (30 - magneticHeading_x/2).toString())
+        .attr('y1', (30 - magneticHeading_y/2).toString())
+        .attr('x2', (30 + magneticHeading_x/2).toString())
+        .attr('y2', (30 + magneticHeading_y/2).toString());
+
+    // Sets the trnsition from the vector's oldAngle to the new angle
+    d3.select('#currentHeadingVectorLine')
+        .transition()
+        .duration(1000)
+        .ease(d3.easeElasticOut, 1, 0.9)
+        .attrTween("transform", () => d3.interpolateString('rotate('+ MHoldAngle +', 30, 30)', 'rotate('+ -magneticHeading +', 30, 30)'));
+
+    document.querySelector('#currentHeadingAngle').innerHTML = magneticHeading;
+    //  ignore document.querySelector('#theoreticalWindMag').innerHTML = theoSpeed;
 	// /********** Compass **********/ 
 
-	// 	// .attr('transform', 'rotate(' + Math.atan2(data.compass.y, data.compass.x) * (180/Math.PI) + ', 50, 50) translate(17, 16) scale(0.30)');
-	// d3.select('#compassBoat')
- //            .transition()
- //            .duration(1000)
- //            .ease(d3.easeElasticOut, 1, 0.9)
- //            .attrTween("transform", () => d3.interpolateString('rotate('+ document.querySelector('#compassBoat').transform.baseVal[0].angle +', 50, 50) translate(17, 16) scale(0.30)', 'rotate('+ data['magnetic-sensor-heading'] * (180/Math.PI) +', 50, 50) translate(17, 16) scale(0.30)'));
-            // .attrTween("transform", () => d3.interpolateString('rotate('+ document.querySelector('#compassBoat').transform.baseVal[0].angle +', 50, 50) translate(17, 16) scale(0.30)', 'rotate('+ -Math.atan2(data.compass.y, data.compass.x) * (180/Math.PI) +', 50, 50) translate(17, 16) scale(0.30)'));
+		// .attr('transform', 'rotate(' + Math.atan2(data.compass.y, data.compass.x) * (180/Math.PI) + ', 50, 50) translate(17, 16) scale(0.30)');
+	d3.select('#compassBoat')
+            .transition()
+            .duration(1000)
+            .ease(d3.easeElasticOut, 1, 0.9)
+            //.attrTween("transform", () => d3.interpolateString('rotate('+ document.querySelector('#compassBoat').transform.baseVal[0].angle +', 50, 50) translate(17, 16) scale(0.30)', 'rotate('+ data['magnetic-sensor-heading'] * (180/Math.PI) +', 50, 50) translate(17, 16) scale(0.30)'));
+            //.attrTween("transform", () => d3.interpolateString('rotate('+ document.querySelector('#compassBoat').transform.baseVal[0].angle +', 50, 50) translate(17, 16) scale(0.30)', 'rotate('+ -Math.atan2(data.compass.y, data.compass.x) * (180/Math.PI) +', 50, 50) translate(17, 16) scale(0.30)'));
+            .attr('transform', 'rotate(' + Math.atan2(data.compass.y, data.compass.x) * (180/Math.PI) + ', 50, 50) translate(17, 16) scale(0.30)');
 
 	// /*** Air Temp **********/
 
@@ -130,16 +182,25 @@ const socketInit = () => {
     	document.querySelector('#theta').innerHTML = data.gyro.theta ? data.gyro.theta : 0;
     	document.querySelector('#psi').innerHTML = data.gyro.psi ? data.gyro.psi : 0;
 
+    // /********** Electronics Status **********/
+
+    document.querySelector('#voltage').innerHTML = data.hullVoltage ? data.hullVoltage + " V" : 0 + " V";
+    document.querySelector('#trimtab-voltage').innerHTML = data.trimtabVoltage ? data.trimtabVoltage + " V" : 0 + " V";
+    
+    //document.querySelector('#theta').innerHTML = data.gyro.theta ? data.gyro.theta : 0;
+    //document.querySelector('#psi').innerHTML = data.gyro.psi ? data.gyro.psi : 0;
+
 	/********** Relative Humidity **********/
 
     	// document.querySelector('#humidityVal').innerHTML = (data.groundspeed ? data.groundspeed : 0) + '%';
 
 	/********** GPS **********/
 
-        if (data.hasOwnProperty('Longitude') || data.hasOwnProperty('Latitude'))
-            // console.log(data.Latitude, data.Longitude);
-            boatPath.getPath().push(new google.maps.LatLng(data['Latitude'], data['Longitude']));
-
+        if (data.gps.hasOwnProperty('longitude') || data.gps.hasOwnProperty('latitude'))
+        {   
+            console.log("Lat/Long: " + data.gps.latitude + ", " + data.gps.longitude);      //added .gps
+            boatPath.getPath().push(new google.maps.LatLng(data.gps.latitude, data.gps.longitude));
+        }
 
 	});
     
