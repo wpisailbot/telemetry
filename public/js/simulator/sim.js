@@ -1,5 +1,6 @@
 //const socket = io("http://localhost:3000/", { transports: ['polling', 'flashsocket'] }); // socket initialization
-const socket = io("http://192.168.17.20:3000/", { transports: ['polling', 'flashsocket'] }); // socket initialization
+//const socket = io("http://192.168.17.20:3000/", { transports: ['polling', 'flashsocket'] }); // socket initialization
+const socket = io("http://192.168.17.19:3000/", { transports: ['polling', 'flashsocket'] }); // socket initialization
 console.log("we think weve connected to port 3000")
 socket.emit('client');
 socket.on('updateDashboard', (data) => {
