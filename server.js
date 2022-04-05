@@ -1,12 +1,22 @@
 const fs = require('fs');
 const http = require('http');
 const express = require('express');
-const socketIO = require('socket.io');
-const bodyParser = require('body-parser');
+
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server);
+
+const io = require("socket.io")(server, {
+	cors: {
+	  origin: "*",
+	  methods: ["GET", "POST"],
+	  allowedHeaders: ['Content-Type', 'Authorization'],
+	  credentials: true
+	}
+  });
+const bodyParser = require('body-parser');
+
+//const io = socketIO(server);
 const port = process.env.PORT || 3000;
 
 // Headers needed so data is in the correct order to be appended to the csv file (from a json) (also its faster this way trust me)
@@ -26,17 +36,37 @@ let writing = false; // whether or not we are currently writing to a csv file
 app.post('/boat', (req, res) => {
 
 	let data = req.body; // pulls data, from http request. Is assumed to be sent in a json format and is preprocessed with bodyparser
-
+	//console.log("data:");
+	//console.log(data);
 
 	// saves the airmar data, it is just checking if these keys are in the json because there are rc and trim tab data as well
-	if (data.hasOwnProperty('magnetic-sensor-heading') || data.hasOwnProperty('track-degrees-true') || data.hasOwnProperty('Latitude-direction') || data.hasOwnProperty('Latitude') || data.hasOwnProperty('Longitude')){
-		io.to('clients').emit('updateAirmarDash', req.body); // emits to airmar client data
+	if (data.hasOwnProperty('currentHeading'))
+	{
+		//console.log("MAG HEADING - GET");
+		io.to('clients').emit('updateMagHeading', req.body); // emits to client data about CURRENT HEADING
+	}
+
+	if (data.hasOwnProperty('apparentWind'))
+	{
+		//console.log("APP. WIND - GET");
+		io.to('clients').emit('updateApparentWind', req.body); // emits to client data about APPARENT WIND DIRECTION/SPEED
+	}
+	if (data.hasOwnProperty('pitchroll'))
+	{
+		console.log("PITCH  & ROLL - GET");
+		io.to('clients').emit('updatePitchRoll', req.body); // emits to client data about PITCH AND ROLL
+	}
+	//TODO - add more updates for each type of input.
+	if (data.hasOwnProperty('Latitude-direction') || data.hasOwnProperty('Latitude') || data.hasOwnProperty('Longitude')){
+		console.log("OTHER STUFF - GET");
+		// COMMENTED OUT BY JARIUS ON 4/5/2022 --- io.to('clients').emit('updateAirmarDash', req.body); // emits to airmar client data
+		// COMMENTED OUT BY JARIUS ON 4/5/2022 --- updateDashboard is TOO BROAD!! -- io.to('clients').emit('updateDashboard', req.body); // emits to airmar client data
 		addToDB(data, 'airmarOut.csv', airmarHeaders); // update airmar db
 	} 
 
 	if (countData && !writing) {
 		countData = false;
-
+		
 		if (data.hasOwnProperty('state')) { // only pulls data that is from the trim tab
 			writing = !writing; // currently writing
 			io.to('clients').emit('updateTrimDash', req.body); // emit to clients with trim tab data (not currently used)
@@ -50,17 +80,25 @@ app.post('/boat', (req, res) => {
 
 		setTimeout(() => countData = true, dataTimeDiff); // resets countData after time interval
 	}
-	res.send(200); // sends ok back
+	//res.send(200); // sends ok back
+	res.sendStatus(200); // sends ok back
 });
 
 // Inits Socket Connection from each client
 io.on('connection', (socket) => {
 	// If designated as a client, socket is sent to a room where the data will be emitted once recieved
-	socket.on('client', () => socket.join('clients'));
+	socket.on('client', () => {
+		socket.join('clients');
+		console.log("New Client.");
+	});
 
 	// once data is recieved emits to all clients in clients room
 	socket.on('data', (data) => {
-		io.to('clients').emit('updateDash', data);
+		var today = new Date();
+		var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+		console.log(time)
+		console.log(data);
+		io.to('clients').emit('updateDashboard', data);
 		addToDB(data);
 	});
 });
@@ -69,10 +107,17 @@ io.on('connection', (socket) => {
 // Function that will add to a database for each different data type
 //		data - data to be saved in json format, file - file to save data, headers - headers of file so csv can be correctly ordered
 const addToDB = async (data, file, headers) => {
+	/*   --- COMMENTED OUT BY JARIUS ON 4/5/2022 FOR TESTING. ---
+	if (headers==null)
+	{
+		//do nothing
+		return 0;
+	}
 	let out = Object.keys(headers).map((val) => 0); // save an array with length of headers and default value to 0
 	Object.entries(data).forEach((entry, ind) => out[headers[entry[0]]] = entry[1]); // set each value at corresponding header location
 	fs.appendFile(file, ['\n' + getDateTime(), ...Object.values(out)], (err) => // appends to csv with organized data w date time
 		{if(!err) writing = false}); // allows function to be called again once writing is complete without errors
+		*/
 }
 
 // just returns the current date time formatted

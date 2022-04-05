@@ -4,6 +4,8 @@ window.onload = () => {
 
 	displayVector('apparentWindVector');
 	displayVector('theoreticalWindVector');
+	displayVector('currentHeadingVector');
+	displayVector('intendedHeadingVector');
 	displayCompass('compassImage');
 	displayPitchRoll('pitchrollDisp', 65);
 	gaugeInit();
