@@ -42,14 +42,21 @@ app.post('/boat', (req, res) => {
 	// saves the airmar data, it is just checking if these keys are in the json because there are rc and trim tab data as well
 	if (data.hasOwnProperty('currentHeading'))
 	{
-		//console.log("MAG HEADING - GET");
+		console.log("MAG HEADING - GET");
 		io.to('clients').emit('updateMagHeading', req.body); // emits to client data about CURRENT HEADING
 	}
 
 	if (data.hasOwnProperty('apparentWind'))
 	{
-		//console.log("APP. WIND - GET");
+		console.log("APP. WIND - GET");
 		io.to('clients').emit('updateApparentWind', req.body); // emits to client data about APPARENT WIND DIRECTION/SPEED
+	}
+	if (data.hasOwnProperty('trueWind'))
+	{
+		console.log("TRUE WIND - GET");
+		//console.log("data:");
+		console.log(data);
+		io.to('clients').emit('updateTrueWind', req.body); // emits to client data about TRUE WIND DIRECTION/SPEED
 	}
 	if (data.hasOwnProperty('pitchroll'))
 	{
@@ -57,8 +64,16 @@ app.post('/boat', (req, res) => {
 		io.to('clients').emit('updatePitchRoll', req.body); // emits to client data about PITCH AND ROLL
 	}
 	//TODO - add more updates for each type of input.
+	if (data.hasOwnProperty('voltageDiscrete'))
+	{
+		console.log("HULL VOLTAGE - GET");
+		io.to('clients').emit('updateHullBattery', req.body); // emits to client data about HULL BATTERY
+	}
 	if (data.hasOwnProperty('Latitude-direction') || data.hasOwnProperty('Latitude') || data.hasOwnProperty('Longitude')){
-		console.log("OTHER STUFF - GET");
+		console.log("LAT/LONG - GET");
+		//console.log("data:");
+		console.log(data);
+		io.to('clients').emit('updateGPS', req.body); // emits to client data about GPS POSITION
 		// COMMENTED OUT BY JARIUS ON 4/5/2022 --- io.to('clients').emit('updateAirmarDash', req.body); // emits to airmar client data
 		// COMMENTED OUT BY JARIUS ON 4/5/2022 --- updateDashboard is TOO BROAD!! -- io.to('clients').emit('updateDashboard', req.body); // emits to airmar client data
 		addToDB(data, 'airmarOut.csv', airmarHeaders); // update airmar db

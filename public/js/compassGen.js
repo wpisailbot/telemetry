@@ -20,6 +20,6 @@ const displayCompass = (div) => {
 
     svg.append('image')
     	.attr('id', 'compassBoat')
-    	.attr('href', '../public/assets/boat.png')
+    	.attr('href', '../assets/boat.png')
     	.attr('transform', 'translate(17, 16) scale(0.30)');
 };

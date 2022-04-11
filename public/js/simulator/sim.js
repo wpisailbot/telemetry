@@ -1,6 +1,6 @@
 //const socket = io("http://localhost:3000/", { transports: ['polling', 'flashsocket'] }); // socket initialization
 //const socket = io("http://192.168.17.20:3000/", { transports: ['polling', 'flashsocket'] }); // socket initialization
-const socket = io("http://192.168.17.19:3000/", { transports: ['polling', 'flashsocket'] }); // socket initialization
+const socket = io("localhost:3000/", { transports: ['polling', 'flashsocket'] }); // socket initialization
 console.log("we think weve connected to port 3000")
 socket.emit('client');
 socket.on('updateDashboard', (data) => {
@@ -92,7 +92,8 @@ function dataMaker(){				//the 'simulator'
 		//windchill: Math.floor(Math.random() * 35),
 		//pressure: 950 + Math.floor(Math.random() * 100),
 		groundspeed: rand_ground_speed,
-		gps: {latitude: boatWaypoints[counter].lat, longitude: boatWaypoints[counter].lng}, 
+		Latitude: boatWaypoints[counter].lat,
+	Longitude: boatWaypoints[counter].lng, 
 		pitchroll: {pitch: 15+Math.floor(randomizer(20)) - 20, roll: Math.floor(Math.random() * 180) - 90},
 		gyro: {phi: Math.floor(randomizer(100000)/1000), theta: Math.floor(randomizer(100000)/1000), psi: Math.floor(randomizer(100000))/1000}
 	};

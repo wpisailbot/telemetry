@@ -10,8 +10,8 @@ const socketInit = () => {
 	
     socket.emit('client');
 	
-
-    // Creates callback for when data is recieved from the server (updates all the page components)
+    
+    // Creates callback for when data is recieved from the server (updates all the page components)     --      this may have worked before 2022 but in 2022 we switched to a series of helper functions called updateTOPIC_NAME.
 	socket.on('updateDashboard', (data) => {
 		console.log("SAILGOAT Dashboard is Connected.");
 		console.log(data);
@@ -116,23 +116,27 @@ const socketInit = () => {
 	/********** Relative Humidity **********/
 
     	// document.querySelector('#humidityVal').innerHTML = (data.groundspeed ? data.groundspeed : 0) + '%';
-
-	/********** GPS **********/
-
-        if (data.gps.hasOwnProperty('longitude') || data.gps.hasOwnProperty('latitude'))
-        {   
-            console.log("Lat/Long: " + data.gps.latitude + ", " + data.gps.longitude);      //added .gps
-            boatPath.getPath().push(new google.maps.LatLng(data.gps.latitude, data.gps.longitude));
-        }
                 
 	});
-    
+    socket.on('updateGPS', (data) => {
+    /********** GPS **********/   
+        //console.log("Lat/Long: " + data.Latitude + ", " + data.Longitude);     
+        boatPath.getPath().push(new google.maps.LatLng(data.Latitude, data.Longitude));
+    });
+
     socket.on('updateMagHeading', (data) => {
         // /********** MAG. HEADING  -- 2022 NEW - TBD**********/
 
         //let theoSpeed = (data.theoreticalWind.speed ? data.theoreticalWind.speed : 60);
         magnitude = 24;
         let magneticHeading = (data.currentHeading ? data.currentHeading : 0);
+        //Airmar returns data like "013 deg" instead of 13 deg. this is to clear the leading 0
+        if (magneticHeading.charAt(0) == '0')
+        {
+            let x = magneticHeading.length
+            let result = magneticHeading.substring(1, x)
+        }
+
         let MHoldAngle = document.querySelector('#currentHeadingVectorLine').transform.baseVal[0].angle;
         let magneticHeading_x = magnitude * Math.cos(0 * (Math.PI / 180));
         let magneticHeading_y = magnitude * Math.sin(0 * (Math.PI / 180));
@@ -152,6 +156,33 @@ const socketInit = () => {
             .attrTween("transform", () => d3.interpolateString('rotate('+ MHoldAngle +', 30, 30)', 'rotate('+ -magneticHeading +', 30, 30)'));
 
         document.querySelector('#currentHeadingAngle').innerHTML = magneticHeading;
+    });
+
+    socket.on('updateTrueWind', (data) => {
+        // /********** Theoretical Wind **********/
+
+        let theoSpeed = (data.trueWind.speed ? data.trueWind.speed : 60);
+        let theoDirection = (data.trueWind.direction ? data.trueWind.direction : 0);
+        let theoOldAngle = document.querySelector('#theoreticalWindVectorLine').transform.baseVal[0].angle;
+        let theoX = theoSpeed * Math.cos(0 * (Math.PI / 180));
+        let theoY = theoSpeed * Math.sin(0 * (Math.PI / 180));
+        
+        // sets the correct Length of the Vector at the 0 angle
+        d3.select('#theoreticalWindVectorLine')
+            .attr('x1', (30 - theoX/2).toString())
+            .attr('y1', (30 - theoY/2).toString())
+            .attr('x2', (30 + theoX/2).toString())
+            .attr('y2', (30 + theoY/2).toString());
+
+        // Sets the trnsition from the vector's oldAngle to the new angle
+        d3.select('#theoreticalWindVectorLine')
+            .transition()
+            .duration(1000)
+            .ease(d3.easeElasticOut, 1, 0.9)
+            .attrTween("transform", () => d3.interpolateString('rotate('+ theoOldAngle +', 30, 30)', 'rotate('+ -theoDirection +', 30, 30)'));
+
+        document.querySelector('#theoreticalWindAngle').innerHTML = theoDirection;
+        document.querySelector('#theoreticalWindMag').innerHTML = theoSpeed;
     });
 
     socket.on('updateApparentWind', (data) => {
@@ -196,7 +227,7 @@ const socketInit = () => {
 		document.querySelector('#apparentWindAngle').innerHTML = appDirection;
 		document.querySelector('#apparentWindMag').innerHTML = appSpeed;
 
-    })
+    });
 
     socket.on('updatePitchRoll', (data) => {
         // /********** Pitch and Roll **********/
@@ -216,11 +247,26 @@ const socketInit = () => {
     // d3.select('#pitchIndicator')
     // 	.attr('transform', 'translate(0, '+ (data.pitchroll.pitch ? data.pitchroll.pitch : 0) +')');
 
-    })
+    });
     socket.on('updateTrimDash', (data) => {
         
     });
-
+    socket.on('updateHullBattery', (data) => {
+        let bars = ""
+        if (data.voltageDiscrete == 14)
+            bars = "▮▮▮ GOOD"
+        else if (data.voltageDiscrete == 13)
+            bars = "▮▮▯ OK"
+        else if (data.voltageDiscrete == 12)
+            bars = "▮▯▯ LOW"
+        else if (data.voltageDiscrete == 11)
+            bars = "▯▯▯ DOCK IMMEDIATELY"
+        else if (data.voltageDiscrete == 0)
+            bars = "▯▯▯ DEAD."  
+        else if (data.voltageDiscrete == -1)
+            bars = "EMERGENCY."            
+        document.querySelector('#hullBatteryState').innerHTML = bars
+    });
     socket.on('updateSerialControls', (data) => {
         
     });
