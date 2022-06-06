@@ -130,6 +130,7 @@ const socketInit = () => {
         //let theoSpeed = (data.theoreticalWind.speed ? data.theoreticalWind.speed : 60);
         magnitude = 24;
         let magneticHeading = (data.currentHeading ? data.currentHeading : 0);
+        //magneticHeading 
         //Airmar returns data like "013 deg" instead of 13 deg. this is to clear the leading 0
         if (magneticHeading.charAt(0) == '0')
         {
@@ -153,7 +154,7 @@ const socketInit = () => {
             .transition()
             .duration(1000)
             .ease(d3.easeElasticOut, 1, 0.9)
-            .attrTween("transform", () => d3.interpolateString('rotate('+ MHoldAngle +', 30, 30)', 'rotate('+ -magneticHeading +', 30, 30)'));
+            .attrTween("transform", () => d3.interpolateString('rotate('+ MHoldAngle +', 30, 30)', 'rotate('+ (-(magneticHeading)+270) +', 30, 30)'));
 
         document.querySelector('#currentHeadingAngle').innerHTML = magneticHeading;
     });
@@ -162,7 +163,7 @@ const socketInit = () => {
         // /********** Theoretical Wind **********/
 
         let theoSpeed = (data.trueWind.speed ? data.trueWind.speed : 60);
-        let theoDirection = (data.trueWind.direction ? data.trueWind.direction : 0);
+        let theoDirection = (data.trueWind.direction ? data.trueWind.direction : 0) +150;
         let theoOldAngle = document.querySelector('#theoreticalWindVectorLine').transform.baseVal[0].angle;
         let theoX = theoSpeed * Math.cos(0 * (Math.PI / 180));
         let theoY = theoSpeed * Math.sin(0 * (Math.PI / 180));
@@ -215,7 +216,7 @@ const socketInit = () => {
             .ease(d3.easeElasticOut, 1, 0.9)
             .attrTween("transform", () => d3.interpolateString('rotate('+ appOldAngle +', 30, 30)', 'rotate('+ -appDirection +', 30, 30)'));
 
-        // d3.select('#apparentWindAngle')
+        // d3.select('#apparentWindAngle')  
         //     .transition()
         //     .duration(1000)
         //     .ease(d3.easeElasticOut,1,0.9)
@@ -227,6 +228,15 @@ const socketInit = () => {
 		document.querySelector('#apparentWindAngle').innerHTML = appDirection;
 		document.querySelector('#apparentWindMag').innerHTML = appSpeed;
 
+    });
+
+    socket.on('updateBoatSpeed', (data) => {
+        let boatSpeed = (data.boatSpeedKnots ? data.boatSpeedKnots : 0);
+        console.log(boatSpeed + " in knots")
+        groundspeed.updateGauge(boatSpeed);
+        //console.log(boatSpeed + " in knots")
+        
+        //document.querySelector('#unitLabels').innerHTML = boatSpeed;
     });
 
     socket.on('updatePitchRoll', (data) => {

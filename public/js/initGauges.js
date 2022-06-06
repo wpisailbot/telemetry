@@ -46,9 +46,9 @@ const gaugeInit = () => {
 
 	groundspeed = new drawGauge({divID: 'speedDisp', 
 							minVal: 0, 
-							maxVal: 25, 
+							maxVal: 10, //25, 
 							needleVal: 0,
-							tickSpaceMajVal: 5, 
+							tickSpaceMajVal: 1, 
 							gaugeUnits: 'Knots', 
 							...options});
 

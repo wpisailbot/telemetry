@@ -49,6 +49,7 @@ app.post('/boat', (req, res) => {
 	if (data.hasOwnProperty('apparentWind'))
 	{
 		console.log("APP. WIND - GET");
+		console.log(data);
 		io.to('clients').emit('updateApparentWind', req.body); // emits to client data about APPARENT WIND DIRECTION/SPEED
 	}
 	if (data.hasOwnProperty('trueWind'))
@@ -64,6 +65,13 @@ app.post('/boat', (req, res) => {
 		io.to('clients').emit('updatePitchRoll', req.body); // emits to client data about PITCH AND ROLL
 	}
 	//TODO - add more updates for each type of input.
+
+	if (data.hasOwnProperty('boatSpeedKnots') || data.hasOwnProperty('track-degrees-true'))
+	{
+		console.log('BOAT SPEED - GET')
+		console.log(data.boatSpeedKnots);
+		io.to('clients').emit('updateBoatSpeed', req.body); // emits to client data about THE BOATS SPEED IN KNOTS
+	}
 	if (data.hasOwnProperty('voltageDiscrete'))
 	{
 		console.log("HULL VOLTAGE - GET");
